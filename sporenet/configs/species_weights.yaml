@@ -1,0 +1,14 @@
+# Pathogenicity Weights for SporeNet Proxy Risk Labeling
+# magnaporthe_oryzae is anchored at 1.0 (Primary Target).
+# Other species are assigned relative weights based on economic risk and pathogenicity.
+
+species_weights:
+  magnaporthe_oryzae: 1.00       # Anchor: Primary target pathogen causing Rice Blast (devastating impact)
+  alternaria: 0.45               # Known foliar pathogen causing early blight and leaf spot in cereal crops
+  bipolaris: 0.50                # Causative agent of Brown Spot in rice and maize; moderate economic risk
+  curvularia: 0.35               # Opportunistic foliar pathogen; causes black kernel and leaf spots
+  curvularia_eragrostidis: 0.30  # Minor leaf spot pathogen with low epidemic virulence
+  exserohilum: 0.40              # Relative of Northern Corn Leaf Blight; moderate virulence in cereal hosts
+  fusarium: 0.70                 # Major toxin producer; causes vascular wilt, head blight, and root rot
+  fusarium_microconidie: 0.50    # Microconidia phase of Fusarium; active secondary infective propagule
+  mycelium: 0.25                 # Vegetative hyphae fragments; potential low-grade inoculum source

@@ -1,0 +1,39 @@
+# SporeNet Master Configuration File
+
+project:
+  name: "SporeNet"
+  version: "0.1.0"
+  target_disease: "Rice Blast (Magnaporthe oryzae)"
+
+paths:
+  data_raw_images: "data/raw/images"
+  data_raw_labels: "data/raw/labels"
+  data_processed: "data/processed"
+  data_synthetic: "data/synthetic"
+  configs: "configs"
+
+weather_thresholds:
+  blast_risk_temp_min: 24.0   # Minimum optimal temp for Rice Blast infection (°C)
+  blast_risk_temp_max: 28.0   # Maximum optimal temp for Rice Blast infection (°C)
+  blast_risk_rh_min: 90.0     # Relative humidity threshold for blast infection risk (%)
+  wetness_rh_threshold: 80.0  # Threshold for high leaf wetness / spore germination (%)
+
+decay_model:
+  decay_constant_k: 0.3       # Exponential decay constant k: state_t = state_{t-1} * exp(-k)
+  fallback_strategy: "hold_last_value"
+
+temporal_windows:
+  lookback_days: 7
+  lookforward_days: 7
+  sampling_cadence: "weekly"
+
+spore_classes:
+  0: "magnaporthe_oryzae"
+  1: "alternaria"
+  2: "bipolaris"
+  3: "curvularia"
+  4: "curvularia_eragrostidis"
+  5: "exserohilum"
+  6: "fusarium"
+  7: "fusarium_microconidie"
+  8: "mycelium"

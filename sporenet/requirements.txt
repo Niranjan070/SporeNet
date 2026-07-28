@@ -1,0 +1,14 @@
+torch
+ultralytics
+opencv-python
+xgboost
+lightgbm
+shap
+langgraph
+streamlit
+pandas
+numpy
+scikit-learn
+pyyaml
+scipy
+pytest
