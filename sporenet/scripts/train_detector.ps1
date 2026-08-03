@@ -2,21 +2,28 @@
 # Target GPU: NVIDIA RTX 5050 (8 GB VRAM)
 # Executes CUDA 12.8 PyTorch environment check, primary 1280px training, 640px ablation, and evaluation.
 
-$ErrorActionPreference = "Stop"
+$PSScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$RepoRoot = Split-Path -Parent $PSScriptRoot
+Set-Location $RepoRoot
+Write-Host "Working Directory set to: $RepoRoot" -ForegroundColor Cyan
 
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host "      SporeNet Phase 2: YOLOv11 Fresh GPU Training Runner" -ForegroundColor Green
 Write-Host "============================================================" -ForegroundColor Green
 
 # 1. Environment & CUDA Setup Check
-Write-Host "`n[Step 1/4] Verifying PyTorch CUDA Environment..." -ForegroundColor Yellow
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+Write-Host "`n[Step 1/4] Verifying & Installing PyTorch CUDA Environment..." -ForegroundColor Yellow
+pip install --force-reinstall --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cu128
 pip install -U ultralytics pycocotools
 
-python -c "import torch; print('PyTorch:', torch.__version__); print('CUDA Available:', torch.cuda.is_available()); print('Device:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU Only')"
+$device = python -c "import torch; print('0' if torch.cuda.is_available() else 'cpu')"
+$device = $device.Trim()
+Write-Host "PyTorch Version: $(python -c 'import torch; print(torch.__version__)')"
+Write-Host "CUDA Available:  $(python -c 'import torch; print(torch.cuda.is_available())')"
+Write-Host "Selected Training Device: $device" -ForegroundColor Cyan
 
 # 2. Primary YOLOv11s Training at imgsz 1280
-Write-Host "`n[Step 2/4] Starting Primary Training Run (YOLOv11s @ 1280px)..." -ForegroundColor Yellow
+Write-Host "`n[Step 2/4] Starting Primary Training Run (YOLOv11s @ 1280px on device=$device)..." -ForegroundColor Yellow
 yolo detect train `
     model=yolo11s.pt `
     data=configs/data_merged.yaml `
@@ -24,14 +31,14 @@ yolo detect train `
     batch=4 `
     epochs=60 `
     patience=20 `
-    device=0 `
+    device=$device `
     workers=2 `
     amp=True `
     project=runs/sporenet `
     name=primary_v11s_1280
 
 # 3. Resolution Ablation Run at imgsz 640
-Write-Host "`n[Step 3/4] Starting Resolution Ablation Run (YOLOv11s @ 640px)..." -ForegroundColor Yellow
+Write-Host "`n[Step 3/4] Starting Resolution Ablation Run (YOLOv11s @ 640px on device=$device)..." -ForegroundColor Yellow
 yolo detect train `
     model=yolo11s.pt `
     data=configs/data_merged.yaml `
@@ -39,7 +46,7 @@ yolo detect train `
     batch=8 `
     epochs=60 `
     patience=20 `
-    device=0 `
+    device=$device `
     workers=2 `
     amp=True `
     project=runs/sporenet `
