@@ -115,36 +115,39 @@ Where:
 
 ## 🧬 Pathogenicity Weights & Proxy Label Derivation
 
-In the absence of field-reported disease outcomes, a domain-grounded **Proxy Risk Index ($R$)** is calculated from weighted spore burden and microclimate infection pressure:
+In the absence of field-reported disease outcomes, a domain-grounded **Proxy Risk Label** is calculated using a **Two-Factor Rule with Veto Power**:
 
-$$S_{\text{weighted}} = \sum_{i=1}^{9} w_i \times \text{spore\_count}_i$$
+1. **Inoculum Bucket** (Primary Target: `magnaporthe_oryzae`, Class 0):
+   - **High:** `primary_spore_count` $\ge 20$
+   - **Medium:** $5 \le$ `primary_spore_count` $< 20$
+   - **Low:** `primary_spore_count` $< 5$
 
-$$\text{Weather Risk Factor } (W) = \frac{\text{lb\_blast\_risk\_days}}{7.0} + \frac{\text{lb\_wet\_hours}}{168.0}$$
+2. **Weather Bucket** (Look-Forward Forecast Window):
+   - **High:** `lf_fc_blast_risk_days` $\ge 3$ AND `lf_fc_wet_hours` $\ge 36$
+   - **Medium:** `lf_fc_blast_risk_days` $\ge 1$ OR `lf_fc_wet_hours` $\ge 24$
+   - **Low:** Otherwise
 
-$$R = S_{\text{weighted}} \times (1.0 + W)$$
+3. **Veto Rules & Rule Matrix:**
+   - **Veto 1:** If Inoculum is **Low** $\rightarrow$ Risk is **`Low`** (no inoculum = no infection).
+   - **Veto 2:** If Weather is **Low** $\rightarrow$ Risk is **`Low`** (dry/hostile forecast = no infection).
+   - **Inoculum High + Weather High** $\rightarrow$ **`Critical`**
+   - **Inoculum High + Weather Medium** $\rightarrow$ **`High`**
+   - **Inoculum Medium + Weather High** $\rightarrow$ **`High`**
+   - **Inoculum Medium + Weather Medium** $\rightarrow$ **`Medium`**
 
 ### Species Pathogenicity Weight Matrix ($w_i$)
 
 | Class ID | Species | Weight ($w_i$) | Agronomic Justification |
 | :---: | :--- | :---: | :--- |
 | 0 | `magnaporthe_oryzae` | **1.00** | Primary target pathogen; causative agent of Rice Blast (high epidemic potential) |
-| 1 | `alternaria` | **0.45** | Foliar pathogen causing leaf spots and blights across multiple cereal hosts |
-| 2 | `bipolaris` | **0.50** | Causative agent of Brown Spot in rice/maize; moderate economic threat |
-| 3 | `curvularia` | **0.35** | Opportunistic foliar pathogen; causes black kernel and leaf spot |
-| 4 | `curvularia_eragrostidis` | **0.30** | Minor foliar pathogen; low epidemic virulence |
-| 5 | `exserohilum` | **0.40** | Causative agent of Northern Corn Leaf Blight; moderate threat in cereals |
-| 6 | `fusarium` | **0.70** | Major toxin-producing pathogen (vascular wilt, head blight); high risk |
-| 7 | `fusarium_microconidie` | **0.50** | Asexual inoculum phase of *Fusarium*; secondary infective propagule |
-| 8 | `mycelium` | **0.25** | Non-differentiated vegetative hyphae fragments; low direct infectivity |
-
-### Risk Level Mapping Thresholds
-
-| Risk Score ($R$) Range | Proxy Label | Recommended Farm Action |
-| :--- | :--- | :--- |
-| $R < 25.0$ | **`Low`** | Routine monitoring; no immediate chemical or cultural intervention required. |
-| $25.0 \le R < 60.0$ | **`Medium`** | Heightened surveillance; prepare canopy aeration or biopesticide treatment. |
-| $60.0 \le R < 120.0$ | **`High`** | Preventive fungicide application recommended within 48 hours. |
-| $R \ge 120.0$ | **`Critical`** | Immediate epidemic alert; mandatory protective spray and drainage control. |
+| 1 | `alternaria` | **0.00** | Benign background class (used as context feature only) |
+| 2 | `bipolaris` | **0.00** | Benign background class (used as context feature only) |
+| 3 | `curvularia` | **0.00** | Benign background class (used as context feature only) |
+| 4 | `curvularia_eragrostidis` | **0.00** | Benign background class (used as context feature only) |
+| 5 | `exserohilum` | **0.00** | Benign background class (used as context feature only) |
+| 6 | `fusarium` | **0.00** | Benign background class (used as context feature only) |
+| 7 | `fusarium_microconidie` | **0.00** | Benign background class (used as context feature only) |
+| 8 | `mycelium` | **0.00** | Benign background class (used as context feature only) |
 
 ---
 

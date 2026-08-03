@@ -17,14 +17,14 @@ import yaml
 # Pathogenicity weights for proxy risk score derivation
 DEFAULT_SPECIES_WEIGHTS = {
     "spore_magnaporthe_oryzae": 1.00,       # Primary Target (Rice Blast anchor)
-    "spore_alternaria": 0.45,               # Foliar pathogen
-    "spore_bipolaris": 0.50,                # Brown spot pathogen
-    "spore_curvularia": 0.35,               # Leaf spot pathogen
-    "spore_curvularia_eragrostidis": 0.30,  # Minor foliar pathogen
-    "spore_exserohilum": 0.40,              # Northern leaf blight relative
-    "spore_fusarium": 0.70,                 # Major toxin/wilt pathogen
-    "spore_fusarium_microconidie": 0.50,    # Asexual propagule phase
-    "spore_mycelium": 0.25,                 # Hyphae fragments
+    "spore_alternaria": 0.00,               # Background class
+    "spore_bipolaris": 0.00,                # Background class
+    "spore_curvularia": 0.00,               # Background class
+    "spore_curvularia_eragrostidis": 0.00,  # Background class
+    "spore_exserohilum": 0.00,              # Background class
+    "spore_fusarium": 0.00,                 # Background class
+    "spore_fusarium_microconidie": 0.00,    # Background class
+    "spore_mycelium": 0.00,                 # Background class
 }
 
 SPORE_COLUMNS = [
@@ -51,23 +51,47 @@ def calculate_shannon_entropy(counts: list[int]) -> float:
             entropy -= p * math.log(p)
     return round(entropy, 4)
 
-def derive_proxy_risk_label(weighted_score: float, blast_days: int, wet_hours: float) -> str:
+def derive_proxy_risk_label(primary_spore_count: float, lf_fc_blast_risk_days: int, lf_fc_wet_hours: float) -> str:
     """
-    Derives proxy disease risk label (Low, Medium, High, Critical) based on weighted spore burden
-    and weather risk modifier.
+    Two-factor rule with veto power.
+    Inoculum bucket (primary_spore_count, class 0):
+      - High: >= 20
+      - Medium: 5 - 19
+      - Low: < 5
+    Weather bucket (look-forward forecast):
+      - High: lf_fc_blast_risk_days >= 3 AND lf_fc_wet_hours >= 36
+      - Medium: lf_fc_blast_risk_days >= 1 OR lf_fc_wet_hours >= 24
+      - Low: otherwise
+    VETO: If inoculum IS Low -> Risk IS Low (no spores = no infection).
+          If weather IS Low -> Risk IS Low (dry/hostile weather = no infection).
+    Rule matrix when neither is Low:
+      - Inoculum High + Weather High -> "Critical"
+      - Inoculum High + Weather Medium -> "High"
+      - Inoculum Medium + Weather High -> "High"
+      - Inoculum Medium + Weather Medium -> "Medium"
+    Returns string: "Low", "Medium", "High", "Critical"
     """
-    # Weather modifier scales risk by look-back blast conditions and wetness duration
-    weather_factor = (blast_days / 7.0) + (wet_hours / (7.0 * 24.0))
-    risk_score = weighted_score * (1.0 + weather_factor)
-    
-    if risk_score < 25.0:
-        return "Low"
-    elif risk_score < 60.0:
-        return "Medium"
-    elif risk_score < 120.0:
-        return "High"
+    if primary_spore_count >= 20:
+        ino_bucket = "High"
+    elif primary_spore_count >= 5:
+        ino_bucket = "Medium"
     else:
+        ino_bucket = "Low"
+
+    if lf_fc_blast_risk_days >= 3 and lf_fc_wet_hours >= 36:
+        wx_bucket = "High"
+    elif lf_fc_blast_risk_days >= 1 or lf_fc_wet_hours >= 24:
+        wx_bucket = "Medium"
+    else:
+        wx_bucket = "Low"
+
+    if ino_bucket == "Low" or wx_bucket == "Low":
+        return "Low"
+    if ino_bucket == "High" and wx_bucket == "High":
         return "Critical"
+    if ino_bucket == "High" or wx_bucket == "High":
+        return "High"
+    return "Medium"
 
 def run_temporal_alignment(
     samples_path: Path,
@@ -197,9 +221,8 @@ def run_temporal_alignment(
         primary_spore_count = int(row["spore_magnaporthe_oryzae"])
         inoculum_state = (inoculum_state * math.exp(-decay_k)) + primary_spore_count
 
-        # Compute weighted spore score for proxy risk label derivation
-        weighted_score = sum(int(row[col]) * weights.get(col, 0.5) for col in SPORE_COLUMNS)
-        proxy_risk_label = derive_proxy_risk_label(weighted_score, lb_blast_risk_days, lb_wet_hours)
+        # Compute proxy risk label using primary inoculum (class 0) and look-forward weather forecast
+        proxy_risk_label = derive_proxy_risk_label(primary_spore_count, lf_fc_blast_risk_days, lf_fc_wet_hours)
 
         aligned_row = {
             "sample_id": sample_id,

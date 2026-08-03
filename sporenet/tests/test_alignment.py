@@ -21,12 +21,65 @@ def test_calculate_shannon_entropy():
     entropy = calculate_shannon_entropy(counts)
     assert abs(entropy - math.log(2)) < 0.001
 
-def test_derive_proxy_risk_label():
-    label_low = derive_proxy_risk_label(weighted_score=10.0, blast_days=0, wet_hours=10.0)
-    assert label_low == "Low"
-    
-    label_critical = derive_proxy_risk_label(weighted_score=80.0, blast_days=5, wet_hours=100.0)
-    assert label_critical in ["High", "Critical"]
+def test_proxy_veto_rule():
+    # Dry forecast vetoes high spores: primary=50, blast_days=0, wet_hours=0 -> Low
+    assert derive_proxy_risk_label(50, 0, 0) == "Low"
+    # No inoculum vetoes perfect weather: primary=0, blast_days=7, wet_hours=100 -> Low
+    assert derive_proxy_risk_label(0, 7, 100) == "Low"
+    # High inoculum + High weather -> Critical: primary=25, blast_days=3, wet_hours=40 -> Critical
+    assert derive_proxy_risk_label(25, 3, 40) == "Critical"
+
+def test_join_key_invariant(tmp_path):
+    """
+    Assert that the temporal join matches on [exposure_start, exposure_end] only,
+    ignoring lab_capture_date completely, and that lab_capture_date never appears in join logic.
+    """
+    # Create weather frame spanning 2 different regimes
+    # Regime A: Exposure window [2026-01-01 to 2026-01-07] -> constant 20.0 C
+    # Regime B: Lab date window [2026-01-08 to 2026-01-10] -> constant 40.0 C
+    dates_exp = pd.date_range("2026-01-01 00:00:00", "2026-01-07 23:00:00", freq="1h")
+    dates_lab = pd.date_range("2026-01-08 00:00:00", "2026-01-10 23:00:00", freq="1h")
+
+    weather_rows = []
+    for dt in dates_exp:
+        weather_rows.append({
+            "timestamp": dt, "field_id": "F01", "trap_id": "TRAP-A",
+            "temp_c": 20.0, "humidity_pct": 85.0, "wind_kmh": 5.0, "rainfall_mm": 0.0
+        })
+    for dt in dates_lab:
+        weather_rows.append({
+            "timestamp": dt, "field_id": "F01", "trap_id": "TRAP-A",
+            "temp_c": 40.0, "humidity_pct": 30.0, "wind_kmh": 10.0, "rainfall_mm": 0.0
+        })
+    weather_df = pd.DataFrame(weather_rows)
+    weather_csv = tmp_path / "weather_invariant.csv"
+    weather_df.to_csv(weather_csv, index=False)
+
+    # Sample with exposure_start/end in Regime A and lab_capture_date in Regime B
+    sample_df = pd.DataFrame([{
+        "sample_id": "SMP-TEST-001",
+        "field_id": "F01",
+        "trap_id": "TRAP-A",
+        "exposure_start": "2026-01-01 00:00:00",
+        "exposure_end": "2026-01-07 23:00:00",
+        "image_path": "data/raw/images/SMP-TEST-001.tif",
+        "spore_magnaporthe_oryzae": 30,
+        "spore_alternaria": 0, "spore_bipolaris": 0, "spore_curvularia": 0,
+        "spore_curvularia_eragrostidis": 0, "spore_exserohilum": 0,
+        "spore_fusarium": 0, "spore_fusarium_microconidie": 0, "spore_mycelium": 0,
+        "lab_capture_date": "2026-01-09",
+        "officer_id": "OFC-TEST"
+    }])
+    samples_csv = tmp_path / "samples_invariant.csv"
+    sample_df.to_csv(samples_csv, index=False)
+
+    output_csv = tmp_path / "aligned_output.csv"
+    df = run_temporal_alignment(samples_csv, weather_csv, output_csv)
+
+    # Assert look-back mean temp equals 20.0 (Regime A) and NOT 40.0 (Regime B)
+    assert df.iloc[0]["lb_mean_temp"] == 20.0
+    # Assert lab_capture_date does not appear as a join key in the output features
+    assert "lab_capture_date" not in df.columns
 
 def test_run_temporal_alignment_pipeline(tmp_path):
     repo_root = Path(__file__).resolve().parent.parent
