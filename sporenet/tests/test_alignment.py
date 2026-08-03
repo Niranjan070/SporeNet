@@ -22,12 +22,12 @@ def test_calculate_shannon_entropy():
     assert abs(entropy - math.log(2)) < 0.001
 
 def test_proxy_veto_rule():
-    # Dry forecast vetoes high spores: primary=50, blast_days=0, wet_hours=0 -> Low
-    assert derive_proxy_risk_label(50, 0, 0) == "Low"
-    # No inoculum vetoes perfect weather: primary=0, blast_days=7, wet_hours=100 -> Low
+    # Dry forecast vetoes high burden: weighted_burden=60, blast_days=0, wet_hours=0 -> Low
+    assert derive_proxy_risk_label(60, 0, 0) == "Low"
+    # No inoculum vetoes perfect weather: weighted_burden=0, blast_days=7, wet_hours=100 -> Low
     assert derive_proxy_risk_label(0, 7, 100) == "Low"
-    # High inoculum + High weather -> Critical: primary=25, blast_days=3, wet_hours=40 -> Critical
-    assert derive_proxy_risk_label(25, 3, 40) == "Critical"
+    # High burden + High weather -> Critical: weighted_burden=30, blast_days=3, wet_hours=40 -> Critical
+    assert derive_proxy_risk_label(30, 3, 40) == "Critical"
 
 def test_join_key_invariant(tmp_path):
     """

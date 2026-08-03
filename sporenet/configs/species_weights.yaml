@@ -1,14 +1,14 @@
 # Pathogenicity Weights for SporeNet Proxy Risk Labeling
-# Inoculum = class-0 (magnaporthe_oryzae) count ONLY. Classes 1-8 are benign background -> context features only.
-# Pathogenicity weights: magnaporthe 1.0, all others 0.0.
+# Inoculum = composite weighted burden over all 9 classes using literature-informed weights.
+# Mycelium = context indicator only.
 
 species_weights:
-  magnaporthe_oryzae: 1.00       # Primary target pathogen (Rice Blast anchor)
-  alternaria: 0.00               # Benign background class
-  bipolaris: 0.00                # Benign background class
-  curvularia: 0.00               # Benign background class
-  curvularia_eragrostidis: 0.00  # Benign background class
-  exserohilum: 0.00              # Benign background class
-  fusarium: 0.00                 # Benign background class
-  fusarium_microconidie: 0.00    # Benign background class
-  mycelium: 0.00                 # Benign background class
+  magnaporthe_oryzae: 1.00       # Blast — critical
+  fusarium: 0.70                 # Bakanae / seedling blight, toxins
+  bipolaris: 0.60                # Brown spot of rice
+  exserohilum: 0.50              # Brown / leaf spot
+  alternaria: 0.45               # Leaf & grain spot
+  curvularia: 0.40               # Kernel / leaf spot
+  curvularia_eragrostidis: 0.30  # Minor foliar
+  fusarium_microconidie: 0.50    # Microconidia phase / secondary propagule
+  mycelium: 0.00                 # Hyphae — context indicator only
