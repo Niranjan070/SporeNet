@@ -1,0 +1,18 @@
+# SporeNet YOLOv11 Multi-Class Dataset Configuration
+# Dataset provenance: Iowa State CWVQA via Roboflow (CC BY 4.0)
+
+path: c:/Users/nirth/Documents/PROJECTS/Final Year Project/sporenet/data/merged
+train: train/images
+val: val/images
+test: test/images
+
+names:
+  0: magnaporthe_oryzae
+  1: alternaria
+  2: bipolaris
+  3: curvularia
+  4: curvularia_eragrostidis
+  5: exserohilum
+  6: fusarium
+  7: fusarium_microconidie
+  8: mycelium
