@@ -20,9 +20,13 @@ def compile_detector_results():
     docs_dir.mkdir(parents=True, exist_ok=True)
     results_md_path = docs_dir / "results_detector.md"
 
-    runs_dir = REPO_ROOT / "runs" / "sporenet"
-    primary_best = runs_dir / "primary_v11s_1280" / "weights" / "best.pt"
-    ablation_best = runs_dir / "ablation_v11s_640" / "weights" / "best.pt"
+    primary_best = REPO_ROOT / "runs" / "detect" / "runs" / "sporenet" / "primary_v11s_1280" / "weights" / "best.pt"
+    if not primary_best.exists():
+        primary_best = REPO_ROOT / "runs" / "sporenet" / "primary_v11s_1280" / "weights" / "best.pt"
+
+    ablation_best = REPO_ROOT / "runs" / "detect" / "runs" / "sporenet" / "ablation_v11s_640" / "weights" / "best.pt"
+    if not ablation_best.exists():
+        ablation_best = REPO_ROOT / "runs" / "sporenet" / "ablation_v11s_640" / "weights" / "best.pt"
 
     # Evaluation results storage
     metrics_primary_val = {}

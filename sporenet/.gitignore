@@ -36,8 +36,10 @@ wheels/
 # Project Data & Models
 data/raw/images/*
 data/raw/labels/*
+data/merged/*
 !data/raw/images/.gitkeep
 !data/raw/labels/.gitkeep
+!data/merged/.gitkeep
 !data/processed/.gitkeep
 !data/synthetic/.gitkeep
 *.pt
@@ -45,6 +47,8 @@ data/raw/labels/*
 *.engine
 *.bin
 *.tar.gz
+*.cache
+runs/
 
 # Logs & Environment
 *.log
