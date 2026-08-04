@@ -9,10 +9,10 @@ Total Images: 2,183 | Total Annotations: 118,241 YOLO bounding boxes | Classes: 
 
 | Model Architecture | Image Size (`imgsz`) | Split | mAP50 | mAP50-95 | Precision | Recall | Status / Notes |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| **YOLOv11s (Primary)** | **1280 px** | **Validation** | **TBD** | **TBD** | **TBD** | **TBD** | Primary evaluation metric |
-| **YOLOv11s (Primary)** | **1280 px** | **Test (34 img)** | TBD | TBD | TBD | TBD | Note: Test set small (34 img limit) |
-| **YOLOv11s (Ablation)** | 640 px | Validation | TBD | TBD | TBD | TBD | Resolution impact story |
-| **YOLOv11s (Ablation)** | 640 px | Test (34 img) | TBD | TBD | TBD | TBD | Resolution impact story |
+| **YOLOv11s (Primary)** | **1280 px** | **Validation** | **0.9252** | **0.7202** | **0.907** | **0.8958** | Primary evaluation metric |
+| **YOLOv11s (Primary)** | **1280 px** | **Test (34 img)** | 0.9391 | 0.7761 | 0.8564 | 0.9156 | Note: Test set small (34 img limit) |
+| **YOLOv11s (Ablation)** | 640 px | Validation | 0.885 | 0.6847 | 0.8984 | 0.8539 | Resolution impact story |
+| **YOLOv11s (Ablation)** | 640 px | Test (34 img) | 0.9132 | 0.7427 | 0.9 | 0.8497 | Resolution impact story |
 
 ---
 
