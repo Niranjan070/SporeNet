@@ -90,6 +90,8 @@ def test_run_temporal_alignment_pipeline(tmp_path):
     if samples_csv.exists() and weather_csv.exists():
         df = run_temporal_alignment(samples_csv, weather_csv, output_csv)
         assert output_csv.exists()
-        assert len(df) == 12
+        samples_df = pd.read_csv(samples_csv)
+        assert len(df) == len(samples_df)
+
         assert "sample_id" in df.columns
         assert "proxy_risk_label" in df.columns

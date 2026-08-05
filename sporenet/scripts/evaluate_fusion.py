@@ -78,11 +78,13 @@ def main():
     print(f"[INFO] Loaded {len(df)} aligned feature rows.")
 
     # Train XGBoost Fusion Model
-    xgb_model = train_xgboost_fusion_model(X, y, model_dir)
+    xgb_model = train_xgboost_fusion_model(X, y, model_dir, le)
 
     # Predict using Fusion Model and inverse transform with fitted LabelEncoder
     raw_preds = xgb_model.predict(X)
     fusion_preds = list(le.inverse_transform(raw_preds))
+
+
 
     # Compute SHAP Attributions & Save Plots
     top_shap_features = generate_shap_plots_and_attributions(xgb_model, X, figures_dir)

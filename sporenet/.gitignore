@@ -1,4 +1,4 @@
-# Python
+# Python & Bytecode
 __pycache__/
 *.py[cod]
 *$py.class
@@ -23,32 +23,40 @@ wheels/
 .installed.cfg
 *.egg
 
-# Jupyter
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter Notebooks
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 
-# IDEs
+# IDEs & System
 .vscode/
 .idea/
 *.swp
 *.swo
+.DS_Store
+Thumbs.db
 
-# Project Data & Models
-data/raw/images/*
-data/raw/labels/*
-data/merged/*
-!data/raw/images/.gitkeep
-!data/raw/labels/.gitkeep
-!data/merged/.gitkeep
-!data/processed/.gitkeep
-!data/synthetic/.gitkeep
+# Project Models & Heavy Artifacts
+runs/
 *.pt
 *.onnx
 *.engine
 *.bin
 *.tar.gz
 *.cache
-runs/
+
+# Raw Large Image Uploads (keep gitkeeps)
+data/raw/images/*
+data/raw/labels/*
+!data/raw/images/.gitkeep
+!data/raw/labels/.gitkeep
+!data/merged/.gitkeep
+!data/processed/.gitkeep
+!data/synthetic/.gitkeep
 
 # Logs & Environment
 *.log

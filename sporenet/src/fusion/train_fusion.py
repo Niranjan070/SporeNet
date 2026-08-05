@@ -56,40 +56,32 @@ def load_and_preprocess_data(csv_path: Path):
     X = df[FEATURE_COLUMNS].copy()
     y_raw = df["proxy_risk_label"].values
     
-    # Label encoding on present targets
     le = LabelEncoder()
     y = le.fit_transform(y_raw)
     return df, X, y, le
 
-def train_xgboost_fusion_model(X: pd.DataFrame, y: np.ndarray, model_dir: Path):
+def train_xgboost_fusion_model(X: pd.DataFrame, y: np.ndarray, model_dir: Path, le: LabelEncoder = None):
     """Trains an XGBoost Classifier on feature matrix."""
     model_dir.mkdir(parents=True, exist_ok=True)
     model_path = model_dir / "xgboost_fusion.json"
 
+    if le is not None:
+        with open(model_dir / "label_encoder.pkl", "wb") as f:
+            pickle.dump(le, f)
+
     num_classes = len(np.unique(y))
-    if num_classes == 1:
-        # Single class present in dataset
-        clf = xgb.XGBClassifier(
-            n_estimators=100,
-            max_depth=4,
-            learning_rate=0.05,
-            random_state=42
-        )
-    else:
-        clf = xgb.XGBClassifier(
-            n_estimators=100,
-            max_depth=4,
-            learning_rate=0.05,
-            objective="multi:softprob",
-            num_class=4,
-            random_state=42,
-            eval_metric="mlogloss"
-        )
+    clf = xgb.XGBClassifier(
+        n_estimators=100,
+        max_depth=4,
+        learning_rate=0.05,
+        random_state=42
+    )
     
     clf.fit(X, y)
     clf.save_model(str(model_path))
     print(f"[OK] Saved XGBoost fusion model to: {model_path}")
     return clf
+
 
 def train_lightgbm_fusion_model(X: pd.DataFrame, y: np.ndarray, model_dir: Path):
     """Trains a LightGBM Classifier on feature matrix."""
@@ -129,7 +121,8 @@ def main():
     df, X, y, le = load_and_preprocess_data(aligned_csv)
     print(f"Loaded {len(df)} aligned rows for model training.")
     
-    xgb_model = train_xgboost_fusion_model(X, y, model_dir)
+    xgb_model = train_xgboost_fusion_model(X, y, model_dir, le)
+
     lgb_model = train_lightgbm_fusion_model(X, y, model_dir)
 
 if __name__ == "__main__":
